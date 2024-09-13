@@ -1,8 +1,8 @@
 import oracle from 'oracledb';
 
 const database = {
-    user: "us_ppiReact",
-    password: "0123",
+    user: "us_ppiReact_3n",
+    password: "123",
     connectString: "localhost/XE"
 }
 

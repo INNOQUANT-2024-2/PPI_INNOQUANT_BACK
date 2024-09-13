@@ -40,8 +40,8 @@ import {validateToken} from "../middlewares/validateToken.js";
 
 /* base de datos */
 const dbConfig = {
-    user: "us_ppiReact",
-    password: "0123",
+    user: "us_ppiReact_3n",
+    password: "123",
     connectionString: "localhost/xe",
     stmtCacheSize: 0
 };
@@ -82,7 +82,7 @@ export const getUsers = async (req, res) => {
 };
 
 export const createUser = async (req, res) => {
-  const  { nombre_usu, apellido1_usu, apellido2_usu, rol_usu, contra_usu } = req.body;
+  const  { identificacion_usu, nombre_usu, apellido1_usu, apellido2_usu, rol_usu, contra_usu } = req.body;
   console.log("Datos recibidos",req.body);
 
   /* logica para crear usuario  */
@@ -94,9 +94,10 @@ export const createUser = async (req, res) => {
     connection = await oracledb.getConnection(dbConfig);    
      // Inserción del usuario
      const insercion = await connection.execute(
-        `INSERT INTO USUARIOS (ID_USU, NOMBRE_USU, APELLIDO1_USU, APELLIDO2_USU, CONTRA_USU, CODIGO_ROL_USU)
-        VALUES (secuencia_usuarios_react.nextval, :nombre_usu, :apellido1_usu, :apellido2_usu, :contra_usu, :rol_usu)`,
+        `INSERT INTO USUARIOS (ID_USU, IDENTIFICACION_USU, NOMBRE_USU, APELLIDO1_USU, APELLIDO2_USU, CONTRA_USU, CODIGO_ROL_USU)
+        VALUES (secuencia_usuarios_react_3n.nextval, :identificacion_usu, :nombre_usu,  :apellido1_usu, :apellido2_usu, :contra_usu, :rol_usu)`,
         {
+          identificacion_usu,
           nombre_usu,
           apellido1_usu,
           apellido2_usu,
