@@ -130,14 +130,15 @@ export const createUser = async (req, res) => {
 
 export const updateUser = async (req, res) => {
   const { id } = req.params;
-  const { nombre_usu, apellido1_usu, apellido2_usu, rol_usu, contra_usu } = req.body;
+  const { identificacion_usu, nombre_usu, apellido1_usu, apellido2_usu, rol_usu, contra_usu } = req.body;
   let connection;
   try {
     const passwordHash = await bcrypt.hash(contra_usu, 10);
     connection = await oracledb.getConnection(dbConfig);
     const result = await connection.execute(
       `UPDATE USUARIOS
-       SET NOMBRE_USU = :nombre_usu,
+       SET IDENTIFICACION_USU = :identificacion_usu,
+           NOMBRE_USU = :nombre_usu,
            APELLIDO1_USU = :apellido1_usu,
            APELLIDO2_USU = :apellido2_usu,
            CONTRA_USU = :contra_usu,
@@ -145,6 +146,7 @@ export const updateUser = async (req, res) => {
        WHERE ID_USU = :id`,
       {
         id,
+        identificacion_usu,
         nombre_usu,
         apellido1_usu,
         apellido2_usu,
@@ -202,74 +204,53 @@ export const deleteUser = async (req, res) => {
 };
 
 export const loginUser = async (req, res) => {
-  const { nombre_usu, contra_usu } = req.body;
+  const { identificacion_usu, contra_usu } = req.body;
   let connection;
 
   try {
-      // Conexión a la base de datos Oracle
       connection = await oracledb.getConnection(dbConfig);
 
-      // Consulta para encontrar al usuario por nombre de usuario
       const userQuery = await connection.execute(
-          `SELECT ID_USU, NOMBRE_USU, APELLIDO1_USU, APELLIDO2_USU, CONTRA_USU, CODIGO_ROL_USU
+          `SELECT ID_USU, IDENTIFICACION_USU, NOMBRE_USU, APELLIDO1_USU, APELLIDO2_USU, CONTRA_USU, CODIGO_ROL_USU
            FROM USUARIOS
-           WHERE NOMBRE_USU = :nombre_usu`,
-          { nombre_usu }
+           WHERE IDENTIFICACION_USU = :identificacion_usu`,
+          { identificacion_usu }
       );
 
-      // Verificar si el usuario fue encontrado
       if (userQuery.rows.length === 0) {
           return res.status(400).json({ message: "Usuario no encontrado" });
       }
 
-      // Extraer datos del usuario encontrado
       const userFound = userQuery.rows[0];
-      const user = {
-          id: userFound[0],
-          nombre_usu: userFound[1],
-          apellido1_usu: userFound[2],
-          apellido2_usu: userFound[3],
-          contra_usu: userFound[4],
-          rol_usu: userFound[5]
-      };
-      console.log(user);
-
-      // Comparar la contraseña ingresada con la almacenada
-      const isMatch = await bcrypt.compare(contra_usu, user.contra_usu);
+      const isMatch = await bcrypt.compare(contra_usu, userFound[5]);
 
       if (!isMatch) {
-          return res.status(400).json({ message: "Contraseña incorrecta" });
+          return res.status(401).json({ message: "Contraseña incorrecta" });
       }
 
-      // Generar un token JWT
-      const token = jwt.sign(
-          {
-              id: user.id,
-              nombre_usu: user.nombre_usu,
-              apellido1_usu: user.apellido1_usu,
-              apellido2_usu: user.apellido2_usu,
-              rol_usu: user.rol_usu
-          },
-          SECRET_KEY,
-          { expiresIn: '1h' } // El token expira en 1 hora
-      );
+      const token = jwt.sign({
+          id: userFound[0],
+          identificacion_usu: userFound[1],
+          nombre_usu: userFound[2],
+          apellido1_usu: userFound[3],
+          apellido2_usu: userFound[4],
+          rol_usu: userFound[6],
+      }, SECRET_KEY, { expiresIn: '1h' });
 
-      // Responder con el token y los datos del usuario autenticado
-      res.json({
+      res.status(200).json({
           token,
           user: {
-              id: user.id,
-              nombre_usu: user.nombre_usu,
-              apellido1_usu: user.apellido1_usu,
-              apellido2_usu: user.apellido2_usu,
-              rol_usu: user.rol_usu
+              id: userFound[0],
+              identificacion_usu: userFound[1],
+              nombre_usu: userFound[2],
+              apellido1_usu: userFound[3],
+              apellido2_usu: userFound[4],
+              rol_usu: userFound[6],
           }
       });
-      console.log(token, user);
-      console.log("Usuario autenticado con éxito y token generado");
   } catch (err) {
       console.error(err);
-      res.status(500).send({ exito: false, mensaje: "Error al autenticar el usuario" });
+      res.status(500).json({ message: "Error en el servidor al autenticar" });
   } finally {
       if (connection) {
           try {
@@ -280,6 +261,7 @@ export const loginUser = async (req, res) => {
       }
   }
 };
+
 
 /* export const login = async (req, res) => {
     const { nombre_usu, contra_usu } = req.body;

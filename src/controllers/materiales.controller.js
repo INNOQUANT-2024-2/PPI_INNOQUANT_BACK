@@ -4,8 +4,8 @@ import oracledb from "oracledb";
 
 /* base de datos */
 const dbConfig = {
-    user: "us_ppiReact",
-    password: "0123",
+    user: "us_ppiReact_3n",
+    password: "123",
     connectionString: "localhost/xe",
     stmtCacheSize: 0
 };
@@ -15,6 +15,7 @@ export const test = (req, res) => {
   res.send('Bienvenido al test mat');
 }
 
+// Obtener todos los materiales
 export const getMaterials = async (req, res) => {
     let connection;
     try {
@@ -27,8 +28,8 @@ export const getMaterials = async (req, res) => {
             }
         );
   
-        console.log("materiales encontrados con éxito:", result.rows);
-        res.json(result.rows); // Asegurarse de enviar solo las filas
+        console.log("Materiales encontrados con éxito:", result.rows);
+        res.json(result.rows); // Asegúrate de enviar solo las filas
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Error al obtener los materiales: ' + err.message });
@@ -43,52 +44,45 @@ export const getMaterials = async (req, res) => {
     }
 };
 
+// Crear un material
 export const createMaterials = async (req, res) => {
-    const  { codigo_mat, nombre_mat,  precio_mat } = req.body;
-    console.log("Datos recibidos",req.body);
-  
-    /* logica para crear usuario  */
+    const { codigo_mat,  nombre_mat,cantidad_mat, precio_mat } = req.body;
+    console.log("Datos recibidos", req.body);
   
     let connection;
   
     try {
       connection = await oracledb.getConnection(dbConfig);    
-       // Inserción del usuario
-       const insercion = await connection.execute(
-          `INSERT INTO MATERIALES (CODIGO_MAT, NOMBRE_MAT, PRECIO_MAT) VALUES (:codigo_mat, :nombre_mat, :precio_mat)`,
-          {
-            codigo_mat,
-            nombre_mat,
-            precio_mat,
-          },
+      
+      const insercion = await connection.execute(
+          `INSERT INTO MATERIALES (CODIGO_MAT,  NOMBRE_MAT,CANTIDAD_MAT, PRECIO_MAT) 
+           VALUES (:codigo_mat,  :nombre_mat,:cantidad_mat, :precio_mat)`,
+          { codigo_mat,  nombre_mat,cantidad_mat, precio_mat },
           { autoCommit: true }
         );
-        console.log("Usuario creado con éxito:", insercion);
-  
-    res.status(201).json({ message: 'Usuario creado con éxito' });
-    console.log('Usuario creado con éxito');
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ exito: false, mensaje: 'Error al crear el usuario: ' + err.message });
-  } finally {
-    if (connection) {
-      try { 
-        await connection.close();
-      } catch (err) {
-        console.error(err);
+      
+      console.log("Material creado con éxito:", insercion);
+      res.status(201).json({ message: 'Material creado con éxito' });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ exito: false, mensaje: 'Error al crear el material: ' + err.message });
+    } finally {
+      if (connection) {
+        try { 
+          await connection.close();
+        } catch (err) {
+          console.error(err);
+        }
       }
     }
-  }
   
     console.log(req.body);
-  
-    /* res.send('Registrando'); */
-  };
+};
 
-// Actualizar un material
+// Actualizar un material (ahora también se actualiza la cantidad)
 export const updateMaterials = async (req, res) => {
   const { codigo_mat } = req.params;
-  const { nombre_mat, precio_mat } = req.body;
+  const { nombre_mat, precio_mat, cantidad_mat } = req.body;
   let connection;
 
   try {
@@ -96,9 +90,10 @@ export const updateMaterials = async (req, res) => {
     const result = await connection.execute(
       `UPDATE MATERIALES
        SET NOMBRE_MAT = :nombre_mat,
-           PRECIO_MAT = :precio_mat
+           PRECIO_MAT = :precio_mat,
+           CANTIDAD_MAT = :cantidad_mat
        WHERE CODIGO_MAT = :codigo_mat`,
-      { codigo_mat, nombre_mat, precio_mat },
+      { codigo_mat, nombre_mat, precio_mat, cantidad_mat }, // Se añadió cantidad_mat aquí
       { autoCommit: true }
     );
 
