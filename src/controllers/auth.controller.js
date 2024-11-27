@@ -1,8 +1,8 @@
 import bcrypt from "bcryptjs";
 import oracledb from "oracledb";
 import jwt from "jsonwebtoken";
-const SECRET_KEY = 'your_secret_key'
-import {validateToken} from "../middlewares/validateToken.js";
+const SECRET_KEY = "your_secret_key";
+import { validateToken } from "../middlewares/validateToken.js";
 
 /* funciones */
 /* async function getUserById(userId) {
@@ -37,53 +37,59 @@ import {validateToken} from "../middlewares/validateToken.js";
     }
 } */
 
-
 /* base de datos */
 const dbConfig = {
-    user: "us_ppiReact_3n",
-    password: "123",
-    connectionString: "localhost/xe",
-    stmtCacheSize: 0
+  user: "us_ppiReact_3n",
+  password: "123",
+  connectionString: "localhost/xe",
+  stmtCacheSize: 0,
 };
-
 
 /* rutas */
 export const home = (req, res) => {
-    res.send('Bienvenido a la API de autenticación');
-}
-
+  res.send("Bienvenido a la API de autenticación");
+};
 
 export const getUsers = async (req, res) => {
   let connection;
   try {
-      connection = await oracledb.getConnection(dbConfig);
-      const result = await connection.execute(
-          `SELECT * FROM USUARIOS`,
-          [], // Puedes pasar aquí los parámetros si es necesario
-          {
-              outFormat: oracledb.OUT_FORMAT_OBJECT // Configurar para obtener un array de objetos
-          }
-      );
-
-      console.log("Usuarios encontrados con éxito:", result.rows);
-      res.json(result.rows); // Asegurarse de enviar solo las filas
-  } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: 'Error al obtener los usuarios: ' + err.message });
-  } finally {
-      if (connection) {
-          try {
-              await connection.close();
-          } catch (err) {
-              console.error(err);
-          }
+    connection = await oracledb.getConnection(dbConfig);
+    const result = await connection.execute(
+      `SELECT * FROM USUARIOS`,
+      [], // Puedes pasar aquí los parámetros si es necesario
+      {
+        outFormat: oracledb.OUT_FORMAT_OBJECT, // Configurar para obtener un array de objetos
       }
+    );
+
+    console.log("Usuarios encontrados con éxito:", result.rows);
+    res.json(result.rows); // Asegurarse de enviar solo las filas
+  } catch (err) {
+    console.error(err);
+    res
+      .status(500)
+      .json({ message: "Error al obtener los usuarios: " + err.message });
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (err) {
+        console.error(err);
+      }
+    }
   }
 };
 
 export const createUser = async (req, res) => {
-  const  { identificacion_usu, nombre_usu, apellido1_usu, apellido2_usu, rol_usu, contra_usu } = req.body;
-  console.log("Datos recibidos",req.body);
+  const {
+    identificacion_usu,
+    nombre_usu,
+    apellido1_usu,
+    apellido2_usu,
+    rol_usu,
+    contra_usu,
+  } = req.body;
+  console.log("Datos recibidos", req.body);
 
   /* logica para crear usuario  */
 
@@ -91,37 +97,42 @@ export const createUser = async (req, res) => {
 
   try {
     const passwordHash = await bcrypt.hash(contra_usu, 10);
-    connection = await oracledb.getConnection(dbConfig);    
-     // Inserción del usuario
-     const insercion = await connection.execute(
-        `INSERT INTO USUARIOS (ID_USU, IDENTIFICACION_USU, NOMBRE_USU, APELLIDO1_USU, APELLIDO2_USU, CONTRA_USU, CODIGO_ROL_USU)
+    connection = await oracledb.getConnection(dbConfig);
+    // Inserción del usuario
+    const insercion = await connection.execute(
+      `INSERT INTO USUARIOS (ID_USU, IDENTIFICACION_USU, NOMBRE_USU, APELLIDO1_USU, APELLIDO2_USU, CONTRA_USU, CODIGO_ROL_USU)
         VALUES (secuencia_usuarios_react_3n.nextval, :identificacion_usu, :nombre_usu,  :apellido1_usu, :apellido2_usu, :contra_usu, :rol_usu)`,
-        {
-          identificacion_usu,
-          nombre_usu,
-          apellido1_usu,
-          apellido2_usu,
-          contra_usu: passwordHash,
-          rol_usu
-        },
-        { autoCommit: true }
-      );
-      console.log("Usuario creado con éxito:", insercion);
+      {
+        identificacion_usu,
+        nombre_usu,
+        apellido1_usu,
+        apellido2_usu,
+        contra_usu: passwordHash,
+        rol_usu,
+      },
+      { autoCommit: true }
+    );
+    console.log("Usuario creado con éxito:", insercion);
 
-  res.status(201).json({ message: 'Usuario creado con éxito' });
-  console.log('Usuario creado con éxito');
-} catch (err) {
-  console.error(err);
-  res.status(500).json({ exito: false, mensaje: 'Error al crear el usuario: ' + err.message });
-} finally {
-  if (connection) {
-    try {
-      await connection.close();
-    } catch (err) {
-      console.error(err);
+    res.status(201).json({ message: "Usuario creado con éxito" });
+    console.log("Usuario creado con éxito");
+  } catch (err) {
+    console.error(err);
+    res
+      .status(500)
+      .json({
+        exito: false,
+        mensaje: "Error al crear el usuario: " + err.message,
+      });
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (err) {
+        console.error(err);
+      }
     }
   }
-}
 
   console.log(req.body);
 
@@ -130,7 +141,14 @@ export const createUser = async (req, res) => {
 
 export const updateUser = async (req, res) => {
   const { id } = req.params;
-  const { identificacion_usu, nombre_usu, apellido1_usu, apellido2_usu, rol_usu, contra_usu } = req.body;
+  const {
+    identificacion_usu,
+    nombre_usu,
+    apellido1_usu,
+    apellido2_usu,
+    rol_usu,
+    contra_usu,
+  } = req.body;
   let connection;
   try {
     const passwordHash = await bcrypt.hash(contra_usu, 10);
@@ -151,24 +169,24 @@ export const updateUser = async (req, res) => {
         apellido1_usu,
         apellido2_usu,
         contra_usu: passwordHash,
-        rol_usu
+        rol_usu,
       },
       { autoCommit: true }
     );
     if (result.rowsAffected === 0) {
-      res.status(404).json({ message: 'Usuario no encontrado' });
+      res.status(404).json({ message: "Usuario no encontrado" });
     } else {
-      res.json({ message: 'Usuario actualizado con éxito' });
+      res.json({ message: "Usuario actualizado con éxito" });
     }
   } catch (err) {
-    console.error('Error updating user:', err);
-    res.status(500).json({ error: 'Error updating user' });
+    console.error("Error updating user:", err);
+    res.status(500).json({ error: "Error updating user" });
   } finally {
     if (connection) {
       try {
         await connection.close();
       } catch (err) {
-        console.error('Error closing connection:', err);
+        console.error("Error closing connection:", err);
       }
     }
   }
@@ -178,28 +196,30 @@ export const deleteUser = async (req, res) => {
   const { id } = req.params;
   let connection;
   try {
-      connection = await oracledb.getConnection(dbConfig);
-      const result = await connection.execute(
-          `DELETE FROM USUARIOS WHERE ID_USU = :id`,
-          [id],
-          { autoCommit: true }
-      );
-      if (result.rowsAffected === 0) {
-          res.status(404).json({ message: 'Usuario no encontrado' });
-      } else {
-          res.json({ message: 'Usuario eliminado con éxito' });
-      }
+    connection = await oracledb.getConnection(dbConfig);
+    const result = await connection.execute(
+      `DELETE FROM USUARIOS WHERE ID_USU = :id`,
+      [id],
+      { autoCommit: true }
+    );
+    if (result.rowsAffected === 0) {
+      res.status(404).json({ message: "Usuario no encontrado" });
+    } else {
+      res.json({ message: "Usuario eliminado con éxito" });
+    }
   } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: 'Error al eliminar el usuario: ' + err.message });
+    console.error(err);
+    res
+      .status(500)
+      .json({ message: "Error al eliminar el usuario: " + err.message });
   } finally {
-      if (connection) {
-          try {
-              await connection.close();
-          } catch (err) {
-              console.error(err);
-          }
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (err) {
+        console.error(err);
       }
+    }
   }
 };
 
@@ -208,60 +228,64 @@ export const loginUser = async (req, res) => {
   let connection;
 
   try {
-      connection = await oracledb.getConnection(dbConfig);
+    connection = await oracledb.getConnection(dbConfig);
 
-      const userQuery = await connection.execute(
-          `SELECT ID_USU, IDENTIFICACION_USU, NOMBRE_USU, APELLIDO1_USU, APELLIDO2_USU, CONTRA_USU, CODIGO_ROL_USU
+    const userQuery = await connection.execute(
+      `SELECT ID_USU, IDENTIFICACION_USU, NOMBRE_USU, APELLIDO1_USU, APELLIDO2_USU, CONTRA_USU, CODIGO_ROL_USU
            FROM USUARIOS
            WHERE IDENTIFICACION_USU = :identificacion_usu`,
-          { identificacion_usu }
-      );
+      { identificacion_usu }
+    );
 
-      if (userQuery.rows.length === 0) {
-          return res.status(400).json({ message: "Usuario no encontrado" });
-      }
+    if (userQuery.rows.length === 0) {
+      return res.status(400).json({ message: "Usuario no encontrado" });
+    }
 
-      const userFound = userQuery.rows[0];
-      const isMatch = await bcrypt.compare(contra_usu, userFound[5]);
+    const userFound = userQuery.rows[0];
+    const isMatch = await bcrypt.compare(contra_usu, userFound[5]);
 
-      if (!isMatch) {
-          return res.status(401).json({ message: "Contraseña incorrecta" });
-      }
+    if (!isMatch) {
+      return res.status(401).json({ message: "Contraseña incorrecta" });
+    }
 
-      const token = jwt.sign({
-          id: userFound[0],
-          identificacion_usu: userFound[1],
-          nombre_usu: userFound[2],
-          apellido1_usu: userFound[3],
-          apellido2_usu: userFound[4],
-          rol_usu: userFound[6],
-      }, SECRET_KEY, { expiresIn: '1h' });
+    const token = jwt.sign(
+      {
+        id: userFound[0],
+        identificacion_usu: userFound[1],
+        nombre_usu: userFound[2],
+        apellido1_usu: userFound[3],
+        apellido2_usu: userFound[4],
+        rol_usu: userFound[6],
+      },
+      SECRET_KEY,
+      { expiresIn: "1h" }
+    );
 
-      res.status(200).json({
-          token,
-          user: {
-              id: userFound[0],
-              identificacion_usu: userFound[1],
-              nombre_usu: userFound[2],
-              apellido1_usu: userFound[3],
-              apellido2_usu: userFound[4],
-              rol_usu: userFound[6],
-          }
-      });
+    res.status(200).json({
+      token,
+      user: {
+        id: userFound[0],
+        identificacion_usu: userFound[1],
+        nombre_usu: userFound[2],
+        apellido1_usu: userFound[3],
+        apellido2_usu: userFound[4],
+        rol_usu: userFound[6],
+      },
+      message: "usuario logueado con exito",
+    });
   } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "Error en el servidor al autenticar" });
+    console.error(err);
+    res.status(500).json({ message: "Error en el servidor al autenticar" });
   } finally {
-      if (connection) {
-          try {
-              await connection.close();
-          } catch (err) {
-              console.error(err);
-          }
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (err) {
+        console.error(err);
       }
+    }
   }
 };
-
 
 /* export const login = async (req, res) => {
     const { nombre_usu, contra_usu } = req.body;
@@ -418,4 +442,3 @@ export const loginUser = async (req, res) => {
     }
     console.log(req.body);
 }; */
-  
