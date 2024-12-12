@@ -62,7 +62,7 @@ export const getUsers = async (req, res) => {
       }
     );
 
-    console.log("Usuarios encontrados con éxito:", result.rows);
+    /* console.log("Usuarios encontrados con éxito:", result.rows); */
     res.json(result.rows); // Asegurarse de enviar solo las filas
   } catch (err) {
     console.error(err);
