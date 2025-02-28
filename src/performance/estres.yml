@@ -1,0 +1,15 @@
+config:
+  target: 'http://localhost:3002'  
+  phases:
+    - duration: 5                  
+      arrivalRate: 5          
+    - duration: 5
+      arrivalRate: 10              
+    - duration: 5
+      arrivalRate: 15              
+    - duration: 5
+      arrivalRate: 20              
+scenarios:
+  - flow:
+      - get:
+          url: "/api/materials"     

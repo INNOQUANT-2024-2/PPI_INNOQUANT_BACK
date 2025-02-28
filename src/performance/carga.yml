@@ -1,0 +1,9 @@
+config:
+  target: 'http://localhost:3002'
+  phases:
+    - duration: 10
+      arrivalRate: 5  # Usuarios por segundo
+scenarios:
+  - flow:
+      - get:
+          url: "/api/materials"

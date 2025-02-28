@@ -1,0 +1,62 @@
+import io.github.bonigarcia.wdm.WebDriverManager;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+
+public class CrearCuenta {
+
+    private WebDriver driver;
+
+    @Before
+    public void setUp() {
+        WebDriverManager.chromedriver().setup();
+        driver = new ChromeDriver();
+        driver.manage().window().maximize();
+    }
+
+    @Test
+    public void crearNuevaCuenta() throws InterruptedException {
+        // Abrir la página principal
+        driver.get("https://www.advantageonlineshopping.com/");
+        Thread.sleep(3000); // Espera para que cargue la página inicial
+
+        // Abrir el modal para registro
+        driver.findElement(By.id("menuUserLink")).click();
+        Thread.sleep(2000); // Espera para que se cargue el modal de usuario
+
+        // Hacer clic en "Crear una nueva cuenta"
+        driver.findElement(By.xpath("//a[text()='CREATE NEW ACCOUNT']")).click();
+        Thread.sleep(2000); // Espera para que se cargue la página de creación de cuenta
+
+        // Llenar el formulario de registro
+        driver.findElement(By.name("usernameRegisterPage")).sendKeys("NuevoUsuario");
+        driver.findElement(By.name("emailRegisterPage")).sendKeys("usuario@example.com");
+        driver.findElement(By.name("passwordRegisterPage")).sendKeys("Clave123");
+        driver.findElement(By.name("confirm_passwordRegisterPage")).sendKeys("Clave123");
+        driver.findElement(By.name("first_nameRegisterPage")).sendKeys("NombreTest");
+        driver.findElement(By.name("last_nameRegisterPage")).sendKeys("ApellidoTest");
+        driver.findElement(By.name("phone_numberRegisterPage")).sendKeys("123456789");
+
+        // Seleccionar el país desde un menú desplegable
+        driver.findElement(By.name("countryListboxRegisterPage")).click();
+        driver.findElement(By.xpath("//option[text()='Colombia']")).click();
+
+        // Aceptar los términos y condiciones
+        driver.findElement(By.name("i_agree")).click();
+
+        // Hacer clic en el botón de registro
+        driver.findElement(By.id("register_btnundefined")).click();
+        Thread.sleep(5000); // Espera para verificar que la cuenta se cree antes de cerrar el navegador
+    }
+
+    @After
+    public void tearDown() throws InterruptedException {
+        Thread.sleep(5000); // Espera adicional antes de cerrar
+        if (driver != null) {
+            driver.quit();
+        }
+    }
+}
