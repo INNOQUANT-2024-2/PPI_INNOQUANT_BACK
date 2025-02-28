@@ -89,7 +89,7 @@ export const createUser = async (req, res) => {
     rol_usu,
     contra_usu,
   } = req.body;
-  console.log("Datos recibidos", req.body);
+  console.log("Datos recibidos con éxito", req.body);
 
   /* logica para crear usuario  */
 
@@ -245,7 +245,7 @@ export const loginUser = async (req, res) => {
     const isMatch = await bcrypt.compare(contra_usu, userFound[5]);
 
     if (!isMatch) {
-      return res.status(401).json({ message: "Contraseña incorrecta" });
+      return res.status(401).json({ message: "La contraseña incorrecta" });
     }
 
     const token = jwt.sign(
@@ -271,7 +271,7 @@ export const loginUser = async (req, res) => {
         apellido2_usu: userFound[4],
         rol_usu: userFound[6],
       },
-      message: "usuario logueado con exito",
+      message: "usuario logueado con éxito",
     });
   } catch (err) {
     console.error(err);
